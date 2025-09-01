@@ -159,33 +159,28 @@
                                 </select>
                             </div>
                         </div>
-                         <div>
-                            <label for="statType" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Stat Type</label>
-                            <select id="statType" name="statType" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
-                            </select>
-                        </div>
-                         <div>
-                            <label for="statValue" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Raw Stat Value</label>
-                            <input type="number" name="statValue" id="statValue" step="0.01" value="0.50" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-slate-300 rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="statType" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Stat Type</label>
+                                <select id="statType" name="statType" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
+                                </select>
+                            </div>
+                             <div>
+                                <label for="statValue" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Raw Stat Value</label>
+                                <input type="number" name="statValue" id="statValue" step="0.01" value="0.50" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-slate-300 rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
+                            </div>
                         </div>
 
-                        <div class="mt-6">
-                            <h3 class="text-md font-semibold text-slate-700 dark:text-slate-300 mb-2">Playstyle Multiplier (PM) Inputs</h3>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Input the player's per 90 stats to calculate their stylistic fit for the Premier League.</p>
-                             <div class="grid grid-cols-3 gap-3">
-                                 <div>
-                                    <label for="pmTackles" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Tackles/90</label>
-                                    <input type="number" name="pmTackles" id="pmTackles" step="0.01" value="3.0" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-slate-300 rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
-                                </div>
-                                <div>
-                                    <label for="pmDribbles" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Dribbles/90</label>
-                                    <input type="number" name="pmDribbles" id="pmDribbles" step="0.01" value="2.5" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-slate-300 rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
-                                </div>
-                                <div>
-                                    <label for="pmProgPasses" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Prog. Passes/90</label>
-                                    <input type="number" name="pmProgPasses" id="pmProgPasses" step="0.01" value="8.0" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-slate-300 rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
-                                </div>
-                            </div>
+                         <div class="mt-4">
+                            <label for="position" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Player Position</label>
+                            <select id="position" name="position" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
+                                <option value="Forward">Forward</option>
+                                <option value="Midfielder" selected>Midfielder</option>
+                                <option value="Defender">Defender</option>
+                            </select>
+                        </div>
+                        <div id="pmInputs" class="mt-6">
+                            <!-- PM Inputs will be dynamically generated here -->
                         </div>
 
                         <button id="calculateBtn" class="w-full mt-6 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -428,20 +423,31 @@
                 }
             },
         };
+        const pmBenchmarks = {
+            'Forward': {
+                '2025': { stat1: 0.85, stat2: 0.81, stat3: 0.50, stat1Name: 'Goals/90', stat2Name: 'xG/90', stat3Name: 'Assists/90' },
+                '2024': { stat1: 0.78, stat2: 0.72, stat3: 0.45, stat1Name: 'Goals/90', stat2Name: 'xG/90', stat3Name: 'Assists/90' },
+                '2023': { stat1: 0.75, stat2: 0.65, stat3: 0.40, stat1Name: 'Goals/90', stat2Name: 'xG/90', stat3Name: 'Assists/90' },
+                '2022': { stat1: 0.72, stat2: 0.61, stat3: 0.38, stat1Name: 'Goals/90', stat2Name: 'xG/90', stat3Name: 'Assists/90' },
+            },
+            'Midfielder': {
+                '2025': { stat1: 9.5, stat2: 3.5, stat3: 3.8, stat1Name: 'Prog. Passes/90', stat2Name: 'Dribbles/90', stat3Name: 'Tackles/90' },
+                '2024': { stat1: 9.0, stat2: 3.2, stat3: 3.5, stat1Name: 'Prog. Passes/90', stat2Name: 'Dribbles/90', stat3Name: 'Tackles/90' },
+                '2023': { stat1: 8.5, stat2: 3.0, stat3: 3.2, stat1Name: 'Prog. Passes/90', stat2Name: 'Dribbles/90', stat3Name: 'Tackles/90' },
+                '2022': { stat1: 8.2, stat2: 2.8, stat3: 3.0, stat1Name: 'Prog. Passes/90', stat2Name: 'Dribbles/90', stat3Name: 'Tackles/90' },
+            },
+            'Defender': {
+                '2025': { stat1: 3.9, stat2: 2.2, stat3: 4.8, stat1Name: 'Tackles/90', stat2Name: 'Interceptions/90', stat3Name: 'Aerials Won/90' },
+                '2024': { stat1: 3.7, stat2: 2.0, stat3: 4.5, stat1Name: 'Tackles/90', stat2Name: 'Interceptions/90', stat3Name: 'Aerials Won/90' },
+                '2023': { stat1: 3.5, stat2: 1.9, stat3: 4.2, stat1Name: 'Tackles/90', stat2Name: 'Interceptions/90', stat3Name: 'Aerials Won/90' },
+                '2022': { stat1: 3.3, stat2: 1.8, stat3: 4.0, stat1Name: 'Tackles/90', stat2Name: 'Interceptions/90', stat3Name: 'Aerials Won/90' },
+            }
+        };
         const statTypes = [
-            'Goals per 90',
-            'xG per 90',
-            'Assists per 90',
-            'Progressive Passes per 90',
-            'Dribbles per 90',
-            'Tackles per 90',
-            'Interceptions per 90',
-            'Aerials Won per 90',
-            'Shot-Creating Actions (SCA) per 90',
-            'Goal-Creating Actions (GCA) per 90',
-            'Carries into Final Third per 90',
-            'Progressive Carries per 90',
-            'Pass Completion %',
+            'Goals per 90', 'xG per 90', 'Assists per 90', 'Progressive Passes per 90',
+            'Dribbles per 90', 'Tackles per 90', 'Interceptions per 90', 'Aerials Won per 90',
+            'Shot-Creating Actions (SCA) per 90', 'Goal-Creating Actions (GCA) per 90',
+            'Carries into Final Third per 90', 'Progressive Carries per 90', 'Pass Completion %',
             'Shots on Target %'
         ];
         const baseLeague = 'Premier League';
@@ -453,7 +459,6 @@
         function calculateDifficultyScores(plYear) {
             const uefaWeight = parseFloat(document.getElementById('uefaWeight').value) / 100;
             const compWeight = parseFloat(document.getElementById('compWeight').value) / 100;
-
             const baseUefa = leagueData[baseLeague][plYear].uefaCoeff;
             const baseComp = leagueData[baseLeague][plYear].intraComp;
             for (const league in leagueData) {
@@ -487,6 +492,29 @@
                 statSelector.appendChild(option);
             });
         }
+        function updatePmInputs(position) {
+            const pmInputsDiv = document.getElementById('pmInputs');
+            const benchmark = pmBenchmarks[position][document.getElementById('plYear').value];
+            
+            pmInputsDiv.innerHTML = `
+                <h3 class="text-md font-semibold text-slate-700 dark:text-slate-300 mb-2">Playstyle Multiplier (PM) Inputs</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Input the player's per 90 stats for their position to calculate their stylistic fit for the Premier League. The benchmark is for a top PL player in the selected year.</p>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label for="pmStat1" class="block text-sm font-medium text-slate-700 dark:text-slate-300">${benchmark.stat1Name}</label>
+                        <input type="number" name="pmStat1" id="pmStat1" step="0.01" value="0" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-slate-300 rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
+                    </div>
+                    <div>
+                        <label for="pmStat2" class="block text-sm font-medium text-slate-700 dark:text-slate-300">${benchmark.stat2Name}</label>
+                        <input type="number" name="pmStat2" id="pmStat2" step="0.01" value="0" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-slate-300 rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
+                    </div>
+                    <div>
+                        <label for="pmStat3" class="block text-sm font-medium text-slate-700 dark:text-slate-300">${benchmark.stat3Name}</label>
+                        <input type="number" name="pmStat3" id="pmStat3" step="0.01" value="0" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-slate-300 rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
+                    </div>
+                </div>
+            `;
+        }
         function updateChartColors() {
             const isDarkMode = document.documentElement.classList.contains('dark');
             const fontColor = isDarkMode ? '#e2e8f0' : '#475569';
@@ -517,6 +545,9 @@
                 adjustmentChartInstance.destroy();
             }
             const leagues = Object.keys(leagueData);
+            const uefaWeight = parseFloat(document.getElementById('uefaWeight').value) / 100;
+            const compWeight = parseFloat(document.getElementById('compWeight').value) / 100;
+
             const factorChartCtx = document.getElementById('factorsChart').getContext('2d');
             factorsChartInstance = new Chart(factorChartCtx, {
                 type: 'bar',
@@ -526,15 +557,15 @@
                         {
                             label: 'Normalized UEFA Coefficient',
                             data: leagues.map(l => leagueData[l][plYear].uefaRatio),
-                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: `rgba(54, 162, 235, ${uefaWeight})`,
+                            borderColor: `rgba(54, 162, 235, 1)`,
                             borderWidth: 1
                         },
                         {
                             label: 'Normalized Competitiveness',
                             data: leagues.map(l => leagueData[l][plYear].compRatio),
-                            backgroundColor: 'rgba(255, 99, 132, 0.6)',
-                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: `rgba(255, 99, 132, ${compWeight})`,
+                            borderColor: `rgba(255, 99, 132, 1)`,
                             borderWidth: 1
                         }
                     ]
@@ -643,24 +674,15 @@
             });
             updateChartColors();
         }
-        function calculatePM(plYear, tackles, dribbles, progPasses) {
-            const pmBenchmark = {
-                tackles: 3.5,
-                dribbles: 3.0,
-                progPasses: 8.5
-            };
-            const plBenchmark = {
-                '2025': { tackles: 3.8, dribbles: 3.6, progPasses: 8.9 },
-                '2024': { tackles: 3.5, dribbles: 3.3, progPasses: 8.5 },
-                '2023': { tackles: 3.2, dribbles: 3.1, progPasses: 8.0 },
-                '2022': { tackles: 3.1, dribbles: 3.0, progPasses: 7.9 },
-            };
-            const benchmark = plBenchmark[plYear] || pmBenchmark;
-
-            const tacklesRatio = tackles / benchmark.tackles;
-            const dribblesRatio = dribbles / benchmark.dribbles;
-            const progPassesRatio = progPasses / benchmark.progPasses;
-            const pm = Math.pow((tacklesRatio + dribblesRatio + progPassesRatio) / 3, 1.15);
+        function calculatePM(position, plYear, stat1, stat2, stat3) {
+            const benchmark = pmBenchmarks[position][plYear];
+            if (!benchmark) {
+                return 1.0;
+            }
+            const stat1Ratio = stat1 / benchmark.stat1;
+            const stat2Ratio = stat2 / benchmark.stat2;
+            const stat3Ratio = stat3 / benchmark.stat3;
+            const pm = Math.pow((stat1Ratio + stat2Ratio + stat3Ratio) / 3, 1.15);
             return pm;
         }
         function performCalculation() {
@@ -672,11 +694,12 @@
             const rawStatYear = document.getElementById('rawStatYear').value;
             const uefaWeight = parseFloat(document.getElementById('uefaWeight').value) / 100;
             const compWeight = parseFloat(document.getElementById('compWeight').value) / 100;
-            const tackles = parseFloat(document.getElementById('pmTackles').value);
-            const dribbles = parseFloat(document.getElementById('pmDribbles').value);
-            const progPasses = parseFloat(document.getElementById('pmProgPasses').value);
+            const position = document.getElementById('position').value;
+            const pmStat1 = parseFloat(document.getElementById('pmStat1').value);
+            const pmStat2 = parseFloat(document.getElementById('pmStat2').value);
+            const pmStat3 = parseFloat(document.getElementById('pmStat3').value);
             
-            if (isNaN(rawValue) || !playerName || !statType || isNaN(tackles) || isNaN(dribbles) || isNaN(progPasses)) {
+            if (isNaN(rawValue) || !playerName || !statType || isNaN(pmStat1) || isNaN(pmStat2) || isNaN(pmStat3)) {
                 document.getElementById('adjustedValue').textContent = '-';
                 document.getElementById('equivalentText').textContent = 'Please fill in all fields.';
                 return;
@@ -688,7 +711,7 @@
             const compRatio = selectedLeagueData.intraComp / baseLeagueData.intraComp;
             
             const lm = (uefaRatio * uefaWeight) + (compRatio * compWeight);
-            const pm = calculatePM(plYear, tackles, dribbles, progPasses);
+            const pm = calculatePM(position, plYear, pmStat1, pmStat2, pmStat3);
             adjustedValue = rawValue * lm * pm;
             
             document.getElementById('adjustedValue').textContent = adjustedValue.toFixed(2);
@@ -706,6 +729,7 @@
         const uefaWeightValueSpan = document.getElementById('uefaWeightValue');
         const compWeightValueSpan = document.getElementById('compWeightValue');
         const themeToggle = document.getElementById('themeToggle');
+        const positionSelector = document.getElementById('position');
 
         if (uefaWeightSlider && compWeightSlider) {
              const updateWeights = () => {
@@ -737,6 +761,13 @@
                 const newYear = event.target.value;
                 calculateDifficultyScores(newYear);
                 renderCharts(newYear);
+                updatePmInputs(document.getElementById('position').value);
+            });
+        }
+        if (positionSelector) {
+             positionSelector.addEventListener('change', (event) => {
+                const newPosition = event.target.value;
+                updatePmInputs(newPosition);
             });
         }
         
@@ -744,6 +775,7 @@
         populateLeagueSelector();
         populateStatSelectors();
         renderCharts(document.getElementById('plYear').value);
+        updatePmInputs(document.getElementById('position').value);
 
         const isSystemDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const storedTheme = localStorage.getItem('theme');

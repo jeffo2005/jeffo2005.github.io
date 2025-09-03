@@ -2,18 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width-device-width, initial-scale=1.0">
     <title>Premier League Stat Adjuster</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Slate Gray & Amber -->
-    <!-- Application Structure Plan: A single-page dashboard design. The structure flows from broad context to specific interaction: 1. A clear textual explanation of the methodology. 2. A visual comparison of league difficulty factors (bar charts) to build user trust and understanding. 3. An interactive calculator for users to apply the methodology to their own data points. 4. A Gemini API-powered section that automatically generates a player scouting report using the adjusted stats from the calculator and comparing them to the raw stats. This single-button workflow makes the process seamless and intuitive, guiding the user to a full, integrated analysis with a single action. -->
-    <!-- Visualization & Content Choices: Report Info: League difficulty factors (UEFA coeff, competitiveness), player stats, and scouting reports. Goal: Compare leagues, allow stat adjustment, and generate qualitative player analysis. Viz/Presentation: Bar charts (Chart.js) for league comparison, a form with dropdowns and an input field for stat entry, and a dynamic text block for output. The AI report is now dynamically updated based on the calculator's output. Interaction: User selects a league and stat type, inputs a value, and clicks a single button to get both the adjusted number and the AI report, which now includes a direct comparison to the raw stat. This creates a powerful, integrated user flow. Justification: Bar charts are excellent for direct comparison. The calculator and LLM-powered report provide clear, task-oriented user interactions, directly serving the user's goal. Library/Method: Chart.js for canvas-based charts, Vanilla JS for all logic and the Gemini API call. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-    <style>
+    
+
+<style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
@@ -80,14 +78,15 @@
                 <div class="stat-card bg-white dark:bg-slate-800">
                     <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-3">The Methodology Explained</h2>
                     <p class="text-slate-600 dark:text-slate-400">
-                        This tool adjusts player statistics from Europe's other top leagues (La Liga, Serie A, Bundesliga, Ligue 1) to estimate their performance if they played in the Premier League. The adjustment is based on a **League Multiplier (LM)**, which accounts for the overall difficulty of a league. Additionally, a **Playstyle Multiplier (PM)** is calculated to correct for a player's individual stylistic fit for the Premier League.
+                        This tool adjusts player statistics to estimate performance in the Premier League. The adjustment uses three core factors:
                     </p>
                     <ul class="list-disc list-inside mt-4 space-y-2 text-slate-600 dark:text-slate-400">
-                        <li><span class="font-semibold">League Multiplier (LM):</span> A factor <span class="font-bold text-red-500">&lt; 1.0</span> that adjusts stats downward based on a league's UEFA coefficient and competitiveness.</li>
-                        <li><span class="font-semibold">Playstyle Multiplier (PM):</span> A data-driven factor <span class="font-bold text-red-500">that can be &lt; or &gt; 1.0</span>, rewarding or penalizing a player based on their stylistic fit.</li>
+                        <li><span class="font-semibold">League Multiplier (LM):</span> Adjusts stats based on the difficulty gap between the original league (in its season) and the Premier League (in the target season).</li>
+                        <li><span class="font-semibold">Playstyle Multiplier (PM):</span> A transparent, "Era-Adjusted" factor. It first adjusts a player's key stats for league difficulty, then compares them to PL benchmarks of the same era to assess their stylistic fit. The model amplifies the PM for outlier players.</li>
+                        <li><span class="font-semibold">Potential Multiplier (PotM):</span> A subjective boost based on perceived potential for growth.</li>
                     </ul>
                      <p class="text-slate-600 dark:text-slate-400 mt-4">
-                        The final adjusted stat is the raw stat multiplied by both the LM and the PM. This provides a much more nuanced and realistic projection of performance.
+                        The final adjusted stat is the raw stat multiplied by all three multipliers (LM, PM, and PotM) for a nuanced performance projection.
                     </p>
                 </div>
             </div>
@@ -127,21 +126,17 @@
             </div>
 
             <div class="lg:col-span-3 stat-card bg-white dark:bg-slate-800">
-                <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-4">Stat Adjustment Calculator</h2>
+                <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-4">Forward Projection Calculator</h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                     <div class="space-y-4">
                          <div>
-                            <label for="playerName" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Player Name</label>
-                            <input type="text" name="playerName" id="playerName" placeholder="e.g., Victor Osimhen" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-slate-300 rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
-                        </div>
-                        <div>
                             <label for="league" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Original League</label>
                             <select id="league" name="league" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
                              <div>
-                                <label for="plYear" class="block text-sm font-medium text-slate-700 dark:text-slate-300">PL Year</label>
+                                <label for="plYear" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Target PL Year</label>
                                 <select id="plYear" name="plYear" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
                                     <option value="2025">2024-25</option>
                                     <option value="2024">2023-24</option>
@@ -179,14 +174,16 @@
                                 <option value="Defender">Defender</option>
                             </select>
                         </div>
-                        <div id="pmInputs" class="mt-6">
-                            <!-- PM Inputs will be dynamically generated here -->
+                        <div id="pmInputs" class="mt-6"></div>
+                        
+                        <div class="mt-4">
+                             <label for="potential" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Player Potential: <span id="potentialValue">Average (1.00x)</span></label>
+                             <input type="range" id="potential" min="1" max="5" value="3" class="mt-2 w-full">
                         </div>
 
                         <button id="calculateBtn" class="w-full mt-6 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Adjust Stat
+                            Calculate Projection
                         </button>
-
                     </div>
 
                     <div id="result" class="result-card p-6 text-center flex flex-col justify-center items-center h-full min-h-[150px]">
@@ -196,6 +193,40 @@
                         <div class="mt-4 text-left w-full space-y-1">
                             <p class="text-sm">League Multiplier (LM): <span id="lmValue" class="font-bold text-amber-200">N/A</span></p>
                             <p class="text-sm">Playstyle Multiplier (PM): <span id="pmValue" class="font-bold text-amber-200">N/A</span></p>
+                            <div id="pmBreakdown" class="ml-4 pl-2 border-l-2 border-amber-300 text-sm hidden"></div>
+                            <p class="text-sm">Potential Multiplier (PotM): <span id="potmValue" class="font-bold text-amber-200">N/A</span></p>
+                            <div id="potmBreakdown" class="ml-4 pl-2 border-l-2 border-amber-300 text-sm hidden"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reverse Calculator -->
+            <div class="lg:col-span-3 stat-card bg-white dark:bg-slate-800">
+                <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-4">Reverse Calculator</h2>
+                <p class="text-slate-600 dark:text-slate-400 mb-4">
+                    Use this tool to find out what raw stats a player would need in another league to achieve a target performance in the Premier League. This uses the player profile (position, PM stats, potential) from the calculator above.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="targetStatValue" class="block text-sm font-medium text-slate-700 dark:text-slate-300">Target PL Stat Value</label>
+                            <input type="number" id="targetStatValue" step="0.01" value="0.50" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-slate-300 rounded-md dark:bg-slate-700 dark:text-white dark:border-slate-600">
+                        </div>
+                        <button id="calculateReverseBtn" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                            Calculate Required Raw Stat
+                        </button>
+                    </div>
+                    <div id="reverseResult" class="bg-slate-100 dark:bg-slate-700 rounded-lg p-6 text-center h-full">
+                        <p class="text-lg font-medium text-slate-500 dark:text-slate-300">Required Raw Stat</p>
+                        <p id="requiredRawValue" class="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">-</p>
+                        <p id="requiredLeagueText" class="text-slate-500 dark:text-slate-400">in selected league.</p>
+                        <div class="mt-4 text-left w-full space-y-1 text-sm text-slate-600 dark:text-slate-400">
+                            <p>League Multiplier (LM): <span id="reverseLmValue" class="font-bold">N/A</span></p>
+                            <p>Playstyle Multiplier (PM): <span id="reversePmValue" class="font-bold">N/A</span></p>
+                            <div id="reversePmBreakdown" class="ml-4 pl-2 border-l-2 border-slate-300 dark:border-slate-500 text-xs hidden"></div>
+                            <p>Potential Multiplier (PotM): <span id="reversePotmValue" class="font-bold">N/A</span></p>
+                            <div id="reversePotmBreakdown" class="ml-4 pl-2 border-l-2 border-slate-300 dark:border-slate-500 text-xs hidden"></div>
                         </div>
                     </div>
                 </div>
@@ -203,7 +234,7 @@
             
             <div class="lg:col-span-3 stat-card bg-white dark:bg-slate-800">
                 <h2 class="text-xl font-semibold text-slate-900 dark:text-white mb-4">Player Comparison Chart</h2>
-                 <p class="text-slate-600 dark:text-slate-400 mb-4 text-center">This chart compares your player's raw stat to the top 5 players in the Premier League for that same stat in the selected year.</p>
+                 <p class="text-slate-600 dark:text-slate-400 mb-4 text-center">This chart compares a selected player's performance to the top 5 players in the Premier League for that same stat in the target year.</p>
                 <div class="chart-container">
                     <canvas id="comparisonChart"></canvas>
                 </div>
@@ -213,6 +244,7 @@
     </main>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // Data stores
         const leagueData = {
             'Premier League': {
                 '2025': { uefaCoeff: 106.5, financialRatio: 1.0, color: 'rgba(59, 130, 246, 0.7)', intraComp: 0.021 },
@@ -246,7 +278,7 @@
             },
         };
         const topPLPlayersData = {
-            '2025': {
+             '2025': {
                 'Goals per 90': {
                     'Erling Haaland': 0.95, 'Darwin Nunez': 0.85, 'Cole Palmer': 0.82, 'Ollie Watkins': 0.75, 'Alexander Isak': 0.72
                 },
@@ -291,136 +323,52 @@
                 }
             },
             '2024': {
-                'Goals per 90': {
-                    'Cole Palmer': 0.85, 'Ollie Watkins': 0.70, 'Dominic Solanke': 0.65, 'Phil Foden': 0.60, 'Alexander Isak': 0.59
-                },
-                'xG per 90': {
-                    'Cole Palmer': 0.78, 'Ollie Watkins': 0.68, 'Dominic Solanke': 0.62, 'Alexander Isak': 0.58, 'Darwin Núñez': 0.55
-                },
-                'Assists per 90': {
-                    'Cole Palmer': 0.45, 'Martin Ødegaard': 0.42, 'Leandro Trossard': 0.40, 'Bruno Fernandes': 0.39, 'Morgan Gibbs-White': 0.37
-                },
-                'Progressive Passes per 90': {
-                    'Rodri': 9.5, 'Kevin De Bruyne': 9.1, 'Bruno Guimarães': 8.8, 'Pascal Groß': 8.6, 'Trent Alexander-Arnold': 8.5
-                },
-                'Dribbles per 90': {
-                    'Eberechi Eze': 3.8, 'Jérémy Doku': 3.6, 'Solly March': 3.3, 'Cole Palmer': 3.2, 'Michael Olise': 3.1
-                },
-                'Tackles per 90': {
-                    'João Palhinha': 3.9, 'Yves Bissouma': 3.7, 'Declan Rice': 3.5, 'Alexis Mac Allister': 3.3, 'Bruno Guimarães': 3.2
-                },
-                'Interceptions per 90': {
-                    'João Palhinha': 2.5, 'Rodri': 2.3, 'Malo Gusto': 2.1, 'William Saliba': 2.0, 'Virgil van Dijk': 1.9
-                },
-                'Aerials Won per 90': {
-                    'Dan Burn': 5.0, 'James Tarkowski': 4.8, 'Harry Maguire': 4.6, 'Ivan Toney': 4.4, 'Ollie Watkins': 4.3
-                },
-                'Shot-Creating Actions (SCA) per 90': {
-                    'Kevin De Bruyne': 6.5, 'Bruno Fernandes': 5.8, 'Phil Foden': 5.5, 'Cole Palmer': 5.2, 'Bukayo Saka': 5.1
-                },
-                'Goal-Creating Actions (GCA) per 90': {
-                    'Kevin De Bruyne': 1.2, 'Bruno Fernandes': 1.1, 'Leandro Trossard': 1.05, 'Mohamed Salah': 1.0, 'Bukayo Saka': 0.98
-                },
-                'Carries into Final Third per 90': {
-                    'Jérémy Doku': 7.5, 'Jack Grealish': 7.0, 'Michael Olise': 6.8, 'Bukayo Saka': 6.5, 'Phil Foden': 6.3
-                },
-                'Progressive Carries per 90': {
-                    'Jérémy Doku': 13.5, 'Jack Grealish': 13.0, 'Eberechi Eze': 12.8, 'Mohamed Salah': 12.5, 'Phil Foden': 12.0
-                },
-                'Pass Completion %': {
-                    'Manuel Akanji': 94.0, 'Rodri': 93.5, 'John Stones': 93.0, 'William Saliba': 92.8, 'Nathan Aké': 92.5
-                },
-                'Shots on Target %': {
-                    'Cole Palmer': 58.0, 'Erling Haaland': 55.0, 'Harry Kane': 52.5, 'Ollie Watkins': 50.0, 'Dominic Solanke': 48.0
-                }
+                'Goals per 90': { 'Cole Palmer': 0.85, 'Ollie Watkins': 0.70, 'Dominic Solanke': 0.65, 'Phil Foden': 0.60, 'Alexander Isak': 0.59 },
+                'xG per 90': { 'Cole Palmer': 0.78, 'Ollie Watkins': 0.68, 'Dominic Solanke': 0.62, 'Alexander Isak': 0.58, 'Darwin Núñez': 0.55 },
+                'Assists per 90': { 'Cole Palmer': 0.45, 'Martin Ødegaard': 0.42, 'Leandro Trossard': 0.40, 'Bruno Fernandes': 0.39, 'Morgan Gibbs-White': 0.37 },
+                'Progressive Passes per 90': { 'Rodri': 9.5, 'Kevin De Bruyne': 9.1, 'Bruno Guimarães': 8.8, 'Pascal Groß': 8.6, 'Trent Alexander-Arnold': 8.5 },
+                'Dribbles per 90': { 'Eberechi Eze': 3.8, 'Jérémy Doku': 3.6, 'Solly March': 3.3, 'Cole Palmer': 3.2, 'Michael Olise': 3.1 },
+                'Tackles per 90': { 'João Palhinha': 3.9, 'Yves Bissouma': 3.7, 'Declan Rice': 3.5, 'Alexis Mac Allister': 3.3, 'Bruno Guimarães': 3.2 },
+                'Interceptions per 90': { 'João Palhinha': 2.5, 'Rodri': 2.3, 'Malo Gusto': 2.1, 'William Saliba': 2.0, 'Virgil van Dijk': 1.9 },
+                'Aerials Won per 90': { 'Dan Burn': 5.0, 'James Tarkowski': 4.8, 'Harry Maguire': 4.6, 'Ivan Toney': 4.4, 'Ollie Watkins': 4.3 },
+                'Shot-Creating Actions (SCA) per 90': { 'Kevin De Bruyne': 6.5, 'Bruno Fernandes': 5.8, 'Phil Foden': 5.5, 'Cole Palmer': 5.2, 'Bukayo Saka': 5.1 },
+                'Goal-Creating Actions (GCA) per 90': { 'Kevin De Bruyne': 1.2, 'Bruno Fernandes': 1.1, 'Leandro Trossard': 1.05, 'Mohamed Salah': 1.0, 'Bukayo Saka': 0.98 },
+                'Carries into Final Third per 90': { 'Jérémy Doku': 7.5, 'Jack Grealish': 7.0, 'Michael Olise': 6.8, 'Bukayo Saka': 6.5, 'Phil Foden': 6.3 },
+                'Progressive Carries per 90': { 'Jérémy Doku': 13.5, 'Jack Grealish': 13.0, 'Eberechi Eze': 12.8, 'Mohamed Salah': 12.5, 'Phil Foden': 12.0 },
+                'Pass Completion %': { 'Manuel Akanji': 94.0, 'Rodri': 93.5, 'John Stones': 93.0, 'William Saliba': 92.8, 'Nathan Aké': 92.5 },
+                'Shots on Target %': { 'Cole Palmer': 58.0, 'Erling Haaland': 55.0, 'Harry Kane': 52.5, 'Ollie Watkins': 50.0, 'Dominic Solanke': 48.0 }
             },
             '2023': {
-                'Goals per 90': {
-                    'Erling Haaland': 0.94, 'Harry Kane': 0.88, 'Mohamed Salah': 0.63, 'Callum Wilson': 0.60, 'Marcus Rashford': 0.58
-                },
-                'xG per 90': {
-                    'Erling Haaland': 0.87, 'Harry Kane': 0.67, 'Darwin Núñez': 0.64, 'Marcus Rashford': 0.54, 'Callum Wilson': 0.53
-                },
-                'Assists per 90': {
-                    'Kevin De Bruyne': 0.51, 'Leandro Trossard': 0.46, 'Bukayo Saka': 0.38, 'Michael Olise': 0.38, 'Riyad Mahrez': 0.38
-                },
-                 'Progressive Passes per 90': {
-                    'Rodri': 9.2, 'Lewis Dunk': 8.9, 'Luke Shaw': 8.5, 'Thiago Silva': 8.2, 'Rúben Neves': 8.0
-                },
-                'Dribbles per 90': {
-                    'Adama Traoré': 4.1, 'Allan Saint-Maximin': 4.0, 'Eberechi Eze': 3.4, 'Solly March': 3.1, 'Gabriel Martinelli': 3.0
-                },
-                'Tackles per 90': {
-                    'Tyler Adams': 3.6, 'João Palhinha': 3.5, 'Alex Iwobi': 3.2, 'Saïd Benrahma': 3.1, 'Casemiro': 3.0
-                },
-                'Interceptions per 90': {
-                    'João Palhinha': 2.2, 'Ibrahima Konaté': 2.1, 'Tyler Adams': 2.0, 'Diogo Dalot': 1.9, 'Moises Caicedo': 1.8
-                },
-                'Aerials Won per 90': {
-                    'Dan Burn': 4.7, 'James Tarkowski': 4.5, 'Harry Maguire': 4.4, 'Ollie Watkins': 4.2, 'Dominic Calvert-Lewin': 4.1
-                },
-                'Shot-Creating Actions (SCA) per 90': {
-                    'Kevin De Bruyne': 6.0, 'Bruno Fernandes': 5.2, 'Bukayo Saka': 4.9, 'Jack Grealish': 4.8, 'Mohamed Salah': 4.7
-                },
-                'Goal-Creating Actions (GCA) per 90': {
-                    'Kevin De Bruyne': 1.05, 'Bruno Fernandes': 0.98, 'Bukayo Saka': 0.95, 'Leandro Trossard': 0.92, 'Mohamed Salah': 0.90
-                },
-                'Carries into Final Third per 90': {
-                    'Jack Grealish': 6.5, 'Solly March': 6.2, 'Bukayo Saka': 6.1, 'Gabriel Martinelli': 5.9, 'Phil Foden': 5.8
-                },
-                'Progressive Carries per 90': {
-                    'Jack Grealish': 12.1, 'Mohamed Salah': 11.8, 'Eberechi Eze': 11.5, 'Allan Saint-Maximin': 11.2, 'Phil Foden': 11.0
-                },
-                'Pass Completion %': {
-                    'Manuel Akanji': 93.3, 'John Stones': 93.1, 'Nathan Aké': 92.5, 'Rodri': 91.5, 'Lewis Dunk': 91.2
-                },
-                'Shots on Target %': {
-                    'Erling Haaland': 55.4, 'Son Heung-min': 50.0, 'Harry Kane': 47.9, 'Kelechi Iheanacho': 46.2, 'Mohamed Salah': 46.0
-                }
+                'Goals per 90': { 'Erling Haaland': 0.94, 'Harry Kane': 0.88, 'Mohamed Salah': 0.63, 'Callum Wilson': 0.60, 'Marcus Rashford': 0.58 },
+                'xG per 90': { 'Erling Haaland': 0.87, 'Harry Kane': 0.67, 'Darwin Núñez': 0.64, 'Marcus Rashford': 0.54, 'Callum Wilson': 0.53 },
+                'Assists per 90': { 'Kevin De Bruyne': 0.51, 'Leandro Trossard': 0.46, 'Bukayo Saka': 0.38, 'Michael Olise': 0.38, 'Riyad Mahrez': 0.38 },
+                'Progressive Passes per 90': { 'Rodri': 9.2, 'Lewis Dunk': 8.9, 'Luke Shaw': 8.5, 'Thiago Silva': 8.2, 'Rúben Neves': 8.0 },
+                'Dribbles per 90': { 'Adama Traoré': 4.1, 'Allan Saint-Maximin': 4.0, 'Eberechi Eze': 3.4, 'Solly March': 3.1, 'Gabriel Martinelli': 3.0 },
+                'Tackles per 90': { 'Tyler Adams': 3.6, 'João Palhinha': 3.5, 'Alex Iwobi': 3.2, 'Saïd Benrahma': 3.1, 'Casemiro': 3.0 },
+                'Interceptions per 90': { 'João Palhinha': 2.2, 'Ibrahima Konaté': 2.1, 'Tyler Adams': 2.0, 'Diogo Dalot': 1.9, 'Moises Caicedo': 1.8 },
+                'Aerials Won per 90': { 'Dan Burn': 4.7, 'James Tarkowski': 4.5, 'Harry Maguire': 4.4, 'Ollie Watkins': 4.2, 'Dominic Calvert-Lewin': 4.1 },
+                'Shot-Creating Actions (SCA) per 90': { 'Kevin De Bruyne': 6.0, 'Bruno Fernandes': 5.2, 'Bukayo Saka': 4.9, 'Jack Grealish': 4.8, 'Mohamed Salah': 4.7 },
+                'Goal-Creating Actions (GCA) per 90': { 'Kevin De Bruyne': 1.05, 'Bruno Fernandes': 0.98, 'Bukayo Saka': 0.95, 'Leandro Trossard': 0.92, 'Mohamed Salah': 0.90 },
+                'Carries into Final Third per 90': { 'Jack Grealish': 6.5, 'Solly March': 6.2, 'Bukayo Saka': 6.1, 'Gabriel Martinelli': 5.9, 'Phil Foden': 5.8 },
+                'Progressive Carries per 90': { 'Jack Grealish': 12.1, 'Mohamed Salah': 11.8, 'Eberechi Eze': 11.5, 'Allan Saint-Maximin': 11.2, 'Phil Foden': 11.0 },
+                'Pass Completion %': { 'Manuel Akanji': 93.3, 'John Stones': 93.1, 'Nathan Aké': 92.5, 'Rodri': 91.5, 'Lewis Dunk': 91.2 },
+                'Shots on Target %': { 'Erling Haaland': 55.4, 'Son Heung-min': 50.0, 'Harry Kane': 47.9, 'Kelechi Iheanacho': 46.2, 'Mohamed Salah': 46.0 }
             },
             '2022': {
-                'Goals per 90': {
-                    'Erling Haaland': 0.88, 'Mohamed Salah': 0.77, 'Son Heung-min': 0.69, 'Cristiano Ronaldo': 0.63, 'Harry Kane': 0.62
-                },
-                'xG per 90': {
-                    'Mohamed Salah': 0.72, 'Cristiano Ronaldo': 0.68, 'Diogo Jota': 0.65, 'Kevin De Bruyne': 0.58, 'Harry Kane': 0.57
-                },
-                'Assists per 90': {
-                    'Paul Pogba': 0.76, 'Trent Alexander-Arnold': 0.44, 'Mason Mount': 0.43, 'Kevin De Bruyne': 0.41, 'Jarrod Bowen': 0.38
-                },
-                 'Progressive Passes per 90': {
-                    'Rúben Neves': 8.8, 'Jack Grealish': 8.5, 'Trent Alexander-Arnold': 8.2, 'Rodri': 8.0, 'Jorginho': 7.9
-                },
-                'Dribbles per 90': {
-                    'Adama Traoré': 4.5, 'Allan Saint-Maximin': 4.2, 'Riyad Mahrez': 3.8, 'Wilfried Zaha': 3.6, 'Jack Grealish': 3.5
-                },
-                'Tackles per 90': {
-                    'João Palhinha': 3.8, 'Rodrigo Bentancur': 3.5, 'Moises Caicedo': 3.4, 'Declan Rice': 3.3, 'N’Golo Kanté': 3.2
-                },
-                'Interceptions per 90': {
-                    'Rúben Dias': 2.5, 'Declan Rice': 2.4, 'Ethan Pinnock': 2.3, 'Ben White': 2.2, 'Conor Coady': 2.1
-                },
-                'Aerials Won per 90': {
-                    'Dominic Calvert-Lewin': 5.1, 'Chris Wood': 4.9, 'James Tarkowski': 4.8, 'Harry Maguire': 4.5, 'Ivan Toney': 4.3
-                },
-                'Shot-Creating Actions (SCA) per 90': {
-                    'Kevin De Bruyne': 6.2, 'Bruno Fernandes': 5.8, 'Jack Grealish': 5.5, 'Mohamed Salah': 5.4, 'Bukayo Saka': 5.1
-                },
-                'Goal-Creating Actions (GCA) per 90': {
-                    'Kevin De Bruyne': 1.15, 'Bruno Fernandes': 1.08, 'Mohamed Salah': 1.02, 'Jack Grealish': 0.95, 'Leandro Trossard': 0.91
-                },
-                'Carries into Final Third per 90': {
-                    'Jack Grealish': 7.2, 'Mohamed Salah': 6.9, 'Gabriel Martinelli': 6.5, 'Bukayo Saka': 6.3, 'Eberechi Eze': 6.0
-                },
-                'Progressive Carries per 90': {
-                    'Jack Grealish': 12.8, 'Mohamed Salah': 12.5, 'Eberechi Eze': 12.1, 'Allan Saint-Maximin': 11.9, 'Phil Foden': 11.5
-                },
-                'Pass Completion %': {
-                    'John Stones': 94.1, 'Rúben Dias': 93.8, 'Nathan Aké': 93.5, 'Rodri': 92.8, 'Joël Matip': 92.4
-                },
-                'Shots on Target %': {
-                    'Son Heung-min': 52.3, 'Erling Haaland': 50.9, 'Ivan Toney': 49.5, 'Cristiano Ronaldo': 48.7, 'Diogo Jota': 48.0
-                }
+                'Goals per 90': { 'Mohamed Salah': 0.77, 'Son Heung-min': 0.69, 'Cristiano Ronaldo': 0.63, 'Harry Kane': 0.62, 'Diogo Jota': 0.60 },
+                'xG per 90': { 'Mohamed Salah': 0.72, 'Cristiano Ronaldo': 0.68, 'Diogo Jota': 0.65, 'Kevin De Bruyne': 0.58, 'Harry Kane': 0.57 },
+                'Assists per 90': { 'Paul Pogba': 0.76, 'Trent Alexander-Arnold': 0.44, 'Mason Mount': 0.43, 'Kevin De Bruyne': 0.41, 'Jarrod Bowen': 0.38 },
+                'Progressive Passes per 90': { 'Rúben Neves': 8.8, 'Jack Grealish': 8.5, 'Trent Alexander-Arnold': 8.2, 'Rodri': 8.0, 'Jorginho': 7.9 },
+                'Dribbles per 90': { 'Adama Traoré': 4.5, 'Allan Saint-Maximin': 4.2, 'Riyad Mahrez': 3.8, 'Wilfried Zaha': 3.6, 'Jack Grealish': 3.5 },
+                'Tackles per 90': { 'João Palhinha': 3.8, 'Rodrigo Bentancur': 3.5, 'Moises Caicedo': 3.4, 'Declan Rice': 3.3, 'N’Golo Kanté': 3.2 },
+                'Interceptions per 90': { 'Rúben Dias': 2.5, 'Declan Rice': 2.4, 'Ethan Pinnock': 2.3, 'Ben White': 2.2, 'Conor Coady': 2.1 },
+                'Aerials Won per 90': { 'Dominic Calvert-Lewin': 5.1, 'Chris Wood': 4.9, 'James Tarkowski': 4.8, 'Harry Maguire': 4.5, 'Ivan Toney': 4.3 },
+                'Shot-Creating Actions (SCA) per 90': { 'Kevin De Bruyne': 6.2, 'Bruno Fernandes': 5.8, 'Jack Grealish': 5.5, 'Mohamed Salah': 5.4, 'Bukayo Saka': 5.1 },
+                'Goal-Creating Actions (GCA) per 90': { 'Kevin De Bruyne': 1.15, 'Bruno Fernandes': 1.08, 'Mohamed Salah': 1.02, 'Jack Grealish': 0.95, 'Leandro Trossard': 0.91 },
+                'Carries into Final Third per 90': { 'Jack Grealish': 7.2, 'Mohamed Salah': 6.9, 'Gabriel Martinelli': 6.5, 'Bukayo Saka': 6.3, 'Eberechi Eze': 6.0 },
+                'Progressive Carries per 90': { 'Jack Grealish': 12.8, 'Mohamed Salah': 12.5, 'Eberechi Eze': 12.1, 'Allan Saint-Maximin': 11.9, 'Phil Foden': 11.5 },
+                'Pass Completion %': { 'John Stones': 94.1, 'Rúben Dias': 93.8, 'Nathan Aké': 93.5, 'Rodri': 92.8, 'Joël Matip': 92.4 },
+                'Shots on Target %': { 'Son Heung-min': 52.3, 'Erling Haaland': 50.9, 'Ivan Toney': 49.5, 'Cristiano Ronaldo': 48.7, 'Diogo Jota': 48.0 }
             },
         };
         const pmBenchmarks = {
@@ -485,6 +433,7 @@
         }
         function populateStatSelectors() {
             const statSelector = document.getElementById('statType');
+            statSelector.innerHTML = '';
             statTypes.forEach(stat => {
                 const option = document.createElement('option');
                 option.value = stat;
@@ -494,11 +443,11 @@
         }
         function updatePmInputs(position) {
             const pmInputsDiv = document.getElementById('pmInputs');
-            const benchmark = pmBenchmarks[position][document.getElementById('plYear').value];
+            const benchmark = pmBenchmarks[position][document.getElementById('rawStatYear').value];
             
             pmInputsDiv.innerHTML = `
                 <h3 class="text-md font-semibold text-slate-700 dark:text-slate-300 mb-2">Playstyle Multiplier (PM) Inputs</h3>
-                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Input the player's per 90 stats for their position to calculate their stylistic fit for the Premier League. The benchmark is for a top PL player in the selected year.</p>
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-2">Input the player's per 90 stats for their position to calculate their stylistic fit. The benchmark is for a top PL player in the same season as the raw stats.</p>
                 <div class="grid grid-cols-3 gap-3">
                     <div>
                         <label for="pmStat1" class="block text-sm font-medium text-slate-700 dark:text-slate-300">${benchmark.stat1Name}</label>
@@ -538,12 +487,9 @@
             }
         }
         function renderCharts(plYear) {
-            if (factorsChartInstance) {
-                factorsChartInstance.destroy();
-            }
-            if (adjustmentChartInstance) {
-                adjustmentChartInstance.destroy();
-            }
+            if (factorsChartInstance) factorsChartInstance.destroy();
+            if (adjustmentChartInstance) adjustmentChartInstance.destroy();
+
             const leagues = Object.keys(leagueData);
             const uefaWeight = parseFloat(document.getElementById('uefaWeight').value) / 100;
             const compWeight = parseFloat(document.getElementById('compWeight').value) / 100;
@@ -554,67 +500,26 @@
                 data: {
                     labels: leagues,
                     datasets: [
-                        {
-                            label: 'Normalized UEFA Coefficient',
-                            data: leagues.map(l => leagueData[l][plYear].uefaRatio),
-                            backgroundColor: `rgba(54, 162, 235, ${uefaWeight})`,
-                            borderColor: `rgba(54, 162, 235, 1)`,
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Normalized Competitiveness',
-                            data: leagues.map(l => leagueData[l][plYear].compRatio),
-                            backgroundColor: `rgba(255, 99, 132, ${compWeight})`,
-                            borderColor: `rgba(255, 99, 132, 1)`,
-                            borderWidth: 1
-                        }
+                        { label: 'Normalized UEFA Coefficient', data: leagues.map(l => leagueData[l][plYear].uefaRatio), backgroundColor: `rgba(54, 162, 235, ${uefaWeight})`, borderColor: `rgba(54, 162, 235, 1)`, borderWidth: 1 },
+                        { label: 'Normalized Competitiveness', data: leagues.map(l => leagueData[l][plYear].compRatio), backgroundColor: `rgba(255, 99, 132, ${compWeight})`, borderColor: `rgba(255, 99, 132, 1)`, borderWidth: 1 }
                     ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        title: { display: false },
-                        tooltip: { mode: 'index', intersect: false },
-                    },
-                    scales: {
-                        y: { beginAtZero: true, suggestedMax: 1.1, title: { display: true, text: 'Normalized Score (PL = 1.0)' } },
-                        x: { grid: { display: false } }
-                    },
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: false }, tooltip: { mode: 'index', intersect: false } }, scales: { y: { beginAtZero: true, suggestedMax: 1.1, title: { display: true, text: 'Normalized Score (PL = 1.0)' } }, x: { grid: { display: false } } } }
             });
             const adjustmentChartCtx = document.getElementById('adjustmentChart').getContext('2d');
             adjustmentChartInstance = new Chart(adjustmentChartCtx, {
                 type: 'bar',
                 data: {
                     labels: leagues.filter(l => l !== baseLeague),
-                    datasets: [{
-                        label: 'Adjustment Factor',
-                        data: leagues.filter(l => l !== baseLeague).map(l => leagueData[l][plYear].faf),
-                        backgroundColor: leagues.filter(l => l !== baseLeague).map(l => leagueData[l][plYear].color),
-                        borderColor: leagues.filter(l => l !== baseLeague).map(l => leagueData[l][plYear].color.replace('0.7', '1')),
-                        borderWidth: 1
-                    }]
+                    datasets: [{ label: 'Adjustment Factor', data: leagues.filter(l => l !== baseLeague).map(l => leagueData[l][plYear].faf), backgroundColor: leagues.filter(l => l !== baseLeague).map(l => leagueData[l][plYear].color), borderColor: leagues.filter(l => l !== baseLeague).map(l => leagueData[l][plYear].color.replace('0.7', '1')), borderWidth: 1 }]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false },
-                        title: { display: false },
-                    },
-                    scales: {
-                        y: { beginAtZero: true, suggestedMax: 1.0, title: { display: true, text: 'Adjustment Factor' } },
-                        x: { grid: { display: false } }
-                    }
-                }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: false } }, scales: { y: { beginAtZero: true, suggestedMax: 1.0, title: { display: true, text: 'Adjustment Factor' } }, x: { grid: { display: false } } } }
             });
             updateChartColors();
         }
         function renderPlayerComparisonChart(playerName, statType, rawValue, adjustedValue, plYear) {
-            if (comparisonChartInstance) {
-                comparisonChartInstance.destroy();
-            }
+            if (comparisonChartInstance) comparisonChartInstance.destroy();
+
             const topPlayers = topPLPlayersData[plYear][statType];
             if (!topPlayers) {
                  const ctx = document.getElementById('comparisonChart').getContext('2d');
@@ -623,73 +528,59 @@
             }
             const labels = [playerName, ...Object.keys(topPlayers)];
             const rawDataValues = [rawValue, ...Object.values(topPlayers)];
-            const adjustedDataValues = [adjustedValue, 0, 0, 0, 0, 0];
+            const adjustedDataValues = [adjustedValue, ...Array(Object.keys(topPlayers).length).fill(0)];
             const comparisonChartCtx = document.getElementById('comparisonChart').getContext('2d');
             comparisonChartInstance = new Chart(comparisonChartCtx, {
                 type: 'bar',
                 data: {
-                    labels: labels,
+                    labels,
                     datasets: [
-                        {
-                            label: 'Raw Stat',
-                            data: rawDataValues,
-                            backgroundColor: 'rgba(252, 211, 77, 0.8)',
-                            borderColor: 'rgba(252, 211, 77, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Adjusted Stat',
-                            data: adjustedDataValues,
-                            backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                            borderColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 1
-                        }
+                        { label: 'Raw Stat', data: rawDataValues, backgroundColor: 'rgba(252, 211, 77, 0.8)', borderColor: 'rgba(252, 211, 77, 1)', borderWidth: 1 },
+                        { label: 'Adjusted Stat', data: adjustedDataValues, backgroundColor: 'rgba(59, 130, 246, 0.6)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1 }
                     ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    plugins: {
-                        legend: { display: true },
-                        tooltip: {
-                             callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    label += context.parsed.x.toFixed(2);
-                                    return label;
-                                }
-                             }
-                        },
-                        title: { display: false },
-                    },
-                    scales: {
-                        x: { beginAtZero: true, title: { display: true, text: statType } },
-                        y: { grid: { display: false } }
-                    },
-                }
+                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: true }, tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.parsed.x.toFixed(2)}` } }, title: { display: false } }, scales: { x: { beginAtZero: true, title: { display: true, text: statType } }, y: { grid: { display: false } } } }
             });
             updateChartColors();
         }
-        function calculatePM(position, plYear, stat1, stat2, stat3) {
-            const benchmark = pmBenchmarks[position][plYear];
-            if (!benchmark) {
-                return 1.0;
+
+        // NEW: Advanced PM Calculation with Tiered Exponents
+        function calculatePM(position, rawStatYear, lmForEra, stat1, stat2, stat3) {
+            const benchmark = pmBenchmarks[position][rawStatYear];
+            if (!benchmark) return { pm: 1.0, averagePQR: 1.0, pqr1: 1.0, pqr2: 1.0, pqr3: 1.0, fitTier: 'N/A' };
+
+            const adjustedStat1 = stat1 * lmForEra;
+            const adjustedStat2 = stat2 * lmForEra;
+            const adjustedStat3 = stat3 * lmForEra;
+
+            const pqr1 = adjustedStat1 / benchmark.stat1;
+            const pqr2 = adjustedStat2 / benchmark.stat2;
+            const pqr3 = adjustedStat3 / benchmark.stat3;
+
+            const averagePQR = (pqr1 + pqr2 + pqr3) / 3;
+
+            let exponent;
+            let fitTier;
+            if (averagePQR >= 1.20) {
+                exponent = 1.30;
+                fitTier = 'Exceptional Fit';
+            } else if (averagePQR >= 1.0) {
+                exponent = 1.15;
+                fitTier = 'Good Fit';
+            } else if (averagePQR >= 0.80) {
+                exponent = 1.20;
+                fitTier = 'Questionable Fit';
+            } else {
+                exponent = 1.40;
+                fitTier = 'Poor Fit';
             }
-            const stat1Ratio = stat1 / benchmark.stat1;
-            const stat2Ratio = stat2 / benchmark.stat2;
-            const stat3Ratio = stat3 / benchmark.stat3;
-            const pm = Math.pow((stat1Ratio + stat2Ratio + stat3Ratio) / 3, 1.15);
-            return pm;
+            
+            const pm = Math.pow(averagePQR, exponent);
+            return { pm, averagePQR, pqr1, pqr2, pqr3, fitTier };
         }
-        function performCalculation() {
+
+        function getMultipliers() {
             const selectedLeague = document.getElementById('league').value;
-            const rawValue = parseFloat(document.getElementById('statValue').value);
-            const playerName = document.getElementById('playerName').value;
-            const statType = document.getElementById('statType').value;
             const plYear = document.getElementById('plYear').value;
             const rawStatYear = document.getElementById('rawStatYear').value;
             const uefaWeight = parseFloat(document.getElementById('uefaWeight').value) / 100;
@@ -698,39 +589,170 @@
             const pmStat1 = parseFloat(document.getElementById('pmStat1').value);
             const pmStat2 = parseFloat(document.getElementById('pmStat2').value);
             const pmStat3 = parseFloat(document.getElementById('pmStat3').value);
+            const potential = parseInt(document.getElementById('potential').value);
             
-            if (isNaN(rawValue) || !playerName || !statType || isNaN(pmStat1) || isNaN(pmStat2) || isNaN(pmStat3)) {
+            if (isNaN(pmStat1) || isNaN(pmStat2) || isNaN(pmStat3)) return null;
+
+            // LM for final stat projection (Original League [rawStatYear] -> PL [plYear])
+            const selectedLeagueDataFinal = leagueData[selectedLeague][rawStatYear];
+            const baseLeagueDataFinal = leagueData[baseLeague][plYear];
+            const uefaRatioFinal = selectedLeagueDataFinal.uefaCoeff / baseLeagueDataFinal.uefaCoeff;
+            const compRatioFinal = selectedLeagueDataFinal.intraComp / baseLeagueDataFinal.intraComp;
+            const lm = (uefaRatioFinal * uefaWeight) + (compRatioFinal * compWeight);
+
+            // LM for PM era-adjustment (Original League [rawStatYear] -> PL [rawStatYear])
+            const selectedLeagueDataEra = leagueData[selectedLeague][rawStatYear];
+            const baseLeagueDataEra = leagueData[baseLeague][rawStatYear];
+            const uefaRatioEra = selectedLeagueDataEra.uefaCoeff / baseLeagueDataEra.uefaCoeff;
+            const compRatioEra = selectedLeagueDataEra.intraComp / baseLeagueDataEra.intraComp;
+            const lmForEra = (uefaRatioEra * uefaWeight) + (compRatioEra * compWeight);
+            
+            const pmDetails = calculatePM(position, rawStatYear, lmForEra, pmStat1, pmStat2, pmStat3);
+            const potm = 1 + (potential - 3) * 0.05;
+
+            const potentialMap = { 1: 'Low', 2: 'Below Avg', 3: 'Average', 4: 'Above Avg', 5: 'High' };
+            const potmTier = potentialMap[potential];
+
+            return { lm, pmDetails, potm, potmTier };
+        }
+
+        function performCalculation() {
+            const rawValue = parseFloat(document.getElementById('statValue').value);
+            const statType = document.getElementById('statType').value;
+            const plYear = document.getElementById('plYear').value;
+            const rawStatYear = document.getElementById('rawStatYear').value;
+            const position = document.getElementById('position').value;
+            const pmBreakdownDiv = document.getElementById('pmBreakdown');
+            const potmBreakdownDiv = document.getElementById('potmBreakdown');
+            
+            if (isNaN(rawValue) || !statType) {
                 document.getElementById('adjustedValue').textContent = '-';
                 document.getElementById('equivalentText').textContent = 'Please fill in all fields.';
+                pmBreakdownDiv.classList.add('hidden');
+                potmBreakdownDiv.classList.add('hidden');
                 return;
             }
-            
-            const selectedLeagueData = leagueData[selectedLeague][rawStatYear];
-            const baseLeagueData = leagueData[baseLeague][plYear];
-            const uefaRatio = selectedLeagueData.uefaCoeff / baseLeagueData.uefaCoeff;
-            const compRatio = selectedLeagueData.intraComp / baseLeagueData.intraComp;
-            
-            const lm = (uefaRatio * uefaWeight) + (compRatio * compWeight);
-            const pm = calculatePM(position, plYear, pmStat1, pmStat2, pmStat3);
-            adjustedValue = rawValue * lm * pm;
+
+            const multipliers = getMultipliers();
+            if (!multipliers) {
+                 document.getElementById('adjustedValue').textContent = '-';
+                 document.getElementById('equivalentText').textContent = 'Please input valid PM stats.';
+                 pmBreakdownDiv.classList.add('hidden');
+                 potmBreakdownDiv.classList.add('hidden');
+                 return;
+            }
+
+            const { lm, pmDetails, potm, potmTier } = multipliers;
+            const pm = pmDetails.pm;
+            adjustedValue = rawValue * lm * pm * potm;
             
             document.getElementById('adjustedValue').textContent = adjustedValue.toFixed(2);
             document.getElementById('lmValue').textContent = lm.toFixed(3);
             document.getElementById('pmValue').textContent = pm.toFixed(3);
+            document.getElementById('potmValue').textContent = potm.toFixed(3);
             
+            const benchmark = pmBenchmarks[position][rawStatYear];
+            pmBreakdownDiv.innerHTML = `
+                <p>↳ <strong>Fit Assessment:</strong> <span class="font-semibold text-amber-200">${pmDetails.fitTier}</span></p>
+                <p class="text-xs text-blue-200/90 mt-1"> (Based on Average PQR of <strong>${pmDetails.averagePQR.toFixed(3)}</strong>)</p>
+                <div class="mt-2 text-xs text-blue-200/80 space-y-0.5">
+                    <p> • ${benchmark.stat1Name} PQR: <strong>${pmDetails.pqr1.toFixed(2)}</strong></p>
+                    <p> • ${benchmark.stat2Name} PQR: <strong>${pmDetails.pqr2.toFixed(2)}</strong></p>
+                    <p> • ${benchmark.stat3Name} PQR: <strong>${pmDetails.pqr3.toFixed(2)}</strong></p>
+                </div>
+            `;
+            pmBreakdownDiv.classList.remove('hidden');
+
+            potmBreakdownDiv.innerHTML = `
+                <p>↳ <strong>Potential Assessment:</strong> <span class="font-semibold text-amber-200">${potmTier}</span></p>
+            `;
+            potmBreakdownDiv.classList.remove('hidden');
+
             document.getElementById('equivalentText').textContent = `is the Premier League equivalent for ${statType}.`;
-            renderPlayerComparisonChart(playerName, statType, rawValue, adjustedValue, plYear);
+            renderPlayerComparisonChart('Selected Player', statType, rawValue, adjustedValue, plYear);
         }
         
+        function performReverseCalculation() {
+             const targetValue = parseFloat(document.getElementById('targetStatValue').value);
+             const selectedLeague = document.getElementById('league').value;
+             const rawStatYear = document.getElementById('rawStatYear').value;
+             const position = document.getElementById('position').value;
+             const reversePmBreakdownDiv = document.getElementById('reversePmBreakdown');
+             const reversePotmBreakdownDiv = document.getElementById('reversePotmBreakdown');
+
+
+             if (isNaN(targetValue)) {
+                 document.getElementById('requiredRawValue').textContent = '-';
+                 reversePmBreakdownDiv.classList.add('hidden');
+                 reversePotmBreakdownDiv.classList.add('hidden');
+                 return;
+             }
+
+             const multipliers = getMultipliers();
+             if (!multipliers) {
+                  document.getElementById('requiredRawValue').textContent = '-';
+                  reversePmBreakdownDiv.classList.add('hidden');
+                  reversePotmBreakdownDiv.classList.add('hidden');
+                  return;
+             }
+
+             const { lm, pmDetails, potm, potmTier } = multipliers;
+             const totalMultiplier = lm * pmDetails.pm * potm;
+
+             if (totalMultiplier === 0) {
+                 document.getElementById('requiredRawValue').textContent = '∞';
+                 return;
+             }
+             
+             const requiredRawValue = targetValue / totalMultiplier;
+
+             document.getElementById('requiredRawValue').textContent = requiredRawValue.toFixed(2);
+             document.getElementById('requiredLeagueText').textContent = `in ${selectedLeague}.`;
+
+             // Populate justification
+             document.getElementById('reverseLmValue').textContent = lm.toFixed(3);
+             document.getElementById('reversePmValue').textContent = pmDetails.pm.toFixed(3);
+             document.getElementById('reversePotmValue').textContent = potm.toFixed(3);
+             
+             const benchmark = pmBenchmarks[position][rawStatYear];
+             reversePmBreakdownDiv.innerHTML = `
+                <p>↳ <strong>Fit Assessment:</strong> <span class="font-semibold">${pmDetails.fitTier}</span></p>
+                <p class="mt-1"> (Based on Avg PQR of <strong>${pmDetails.averagePQR.toFixed(3)}</strong>)</p>
+                <div class="mt-2 space-y-0.5">
+                    <p> • ${benchmark.stat1Name} PQR: <strong>${pmDetails.pqr1.toFixed(2)}</strong></p>
+                    <p> • ${benchmark.stat2Name} PQR: <strong>${pmDetails.pqr2.toFixed(2)}</strong></p>
+                    <p> • ${benchmark.stat3Name} PQR: <strong>${pmDetails.pqr3.toFixed(2)}</strong></p>
+                </div>
+            `;
+             reversePmBreakdownDiv.classList.remove('hidden');
+
+             reversePotmBreakdownDiv.innerHTML = `
+                <p>↳ <strong>Potential Assessment:</strong> <span class="font-semibold">${potmTier}</span></p>
+            `;
+             reversePotmBreakdownDiv.classList.remove('hidden');
+        }
+        
+        // Event Listeners Setup
         const calculateBtn = document.getElementById('calculateBtn');
+        const calculateReverseBtn = document.getElementById('calculateReverseBtn');
         const plYearSelector = document.getElementById('plYear');
+        const rawStatYearSelector = document.getElementById('rawStatYear');
         const uefaWeightSlider = document.getElementById('uefaWeight');
         const compWeightSlider = document.getElementById('compWeight');
         const uefaWeightValueSpan = document.getElementById('uefaWeightValue');
         const compWeightValueSpan = document.getElementById('compWeightValue');
         const themeToggle = document.getElementById('themeToggle');
         const positionSelector = document.getElementById('position');
+        const potentialSlider = document.getElementById('potential');
+        const potentialValueSpan = document.getElementById('potentialValue');
 
+        if (potentialSlider) {
+            potentialSlider.addEventListener('input', () => {
+                const potential = parseInt(potentialSlider.value);
+                const potentialMap = { 1: 'Low (0.90x)', 2: 'Below Avg (0.95x)', 3: 'Average (1.00x)', 4: 'Above Avg (1.05x)', 5: 'High (1.10x)' };
+                potentialValueSpan.textContent = potentialMap[potential];
+            });
+        }
         if (uefaWeightSlider && compWeightSlider) {
              const updateWeights = () => {
                 let uefaWeight = parseInt(uefaWeightSlider.value);
@@ -752,31 +774,21 @@
                 renderCharts(document.getElementById('plYear').value);
             });
         }
-        if (calculateBtn) {
-            calculateBtn.addEventListener('click', performCalculation);
-        }
         
-        if (plYearSelector) {
-            plYearSelector.addEventListener('change', (event) => {
-                const newYear = event.target.value;
-                calculateDifficultyScores(newYear);
-                renderCharts(newYear);
-                updatePmInputs(document.getElementById('position').value);
-            });
-        }
-        if (positionSelector) {
-             positionSelector.addEventListener('change', (event) => {
-                const newPosition = event.target.value;
-                updatePmInputs(newPosition);
-            });
-        }
+        const yearChangeHandler = () => {
+            const newYear = document.getElementById('plYear').value;
+            calculateDifficultyScores(newYear);
+            renderCharts(newYear);
+            updatePmInputs(document.getElementById('position').value);
+        };
         
-        calculateDifficultyScores(document.getElementById('plYear').value);
-        populateLeagueSelector();
-        populateStatSelectors();
-        renderCharts(document.getElementById('plYear').value);
-        updatePmInputs(document.getElementById('position').value);
-
+        if (calculateBtn) calculateBtn.addEventListener('click', performCalculation);
+        if (calculateReverseBtn) calculateReverseBtn.addEventListener('click', performReverseCalculation);
+        if (plYearSelector) plYearSelector.addEventListener('change', yearChangeHandler);
+        if (rawStatYearSelector) rawStatYearSelector.addEventListener('change', yearChangeHandler);
+        if (positionSelector) positionSelector.addEventListener('change', (e) => updatePmInputs(e.target.value));
+        
+        // Theme Toggle Logic
         const isSystemDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const storedTheme = localStorage.getItem('theme');
         if (storedTheme === 'dark' || (storedTheme === null && isSystemDarkMode)) {
@@ -787,20 +799,21 @@
             document.getElementById('moonIcon').classList.remove('hidden');
             document.getElementById('sunIcon').classList.add('hidden');
         }
-
         themeToggle.addEventListener('click', () => {
             document.documentElement.classList.toggle('dark');
-            if (document.documentElement.classList.contains('dark')) {
-                localStorage.setItem('theme', 'dark');
-                document.getElementById('sunIcon').classList.remove('hidden');
-                document.getElementById('moonIcon').classList.add('hidden');
-            } else {
-                localStorage.setItem('theme', 'light');
-                document.getElementById('moonIcon').classList.remove('hidden');
-                document.getElementById('sunIcon').classList.add('hidden');
-            }
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            document.getElementById('sunIcon').classList.toggle('hidden', !isDark);
+            document.getElementById('moonIcon').classList.toggle('hidden', isDark);
             updateChartColors();
         });
+
+        // Initial setup
+        calculateDifficultyScores(plYearSelector.value);
+        populateLeagueSelector();
+        populateStatSelectors();
+        renderCharts(plYearSelector.value);
+        updatePmInputs(positionSelector.value);
     });
 </script>
 </body>

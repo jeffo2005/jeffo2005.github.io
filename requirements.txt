@@ -1,0 +1,14 @@
+flask
+
+pandas
+
+curl_cffi
+
+beautifulsoup4
+
+lxml
+
+openpyxl
+
+gunicorn
+
